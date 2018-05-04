@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <Version Value="10"/>
+    <BuildModes Active="Default"/>
+    <Units Count="2">
+      <Unit0>
+        <Filename Value="fwupd.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="35"/>
+        <CursorPos X="32" Y="48"/>
+        <UsageCount Value="23"/>
+        <Loaded Value="True"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="/usr/share/fpcsrc/3.0.2/packages/fcl-base/src/custapp.pp"/>
+        <UnitName Value="CustApp"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="61"/>
+        <CursorPos X="14" Y="74"/>
+        <UsageCount Value="10"/>
+      </Unit1>
+    </Units>
+    <JumpHistory Count="4" HistoryIndex="3">
+      <Position1>
+        <Filename Value="fwupd.lpr"/>
+        <Caret Line="19" Column="15" TopLine="6"/>
+      </Position1>
+      <Position2>
+        <Filename Value="fwupd.lpr"/>
+        <Caret Line="41" Column="10" TopLine="32"/>
+      </Position2>
+      <Position3>
+        <Filename Value="fwupd.lpr"/>
+        <Caret Line="45" Column="15" TopLine="35"/>
+      </Position3>
+      <Position4>
+        <Filename Value="fwupd.lpr"/>
+        <Caret Line="48" Column="32" TopLine="35"/>
+      </Position4>
+    </JumpHistory>
+  </ProjectSession>
+</CONFIG>
