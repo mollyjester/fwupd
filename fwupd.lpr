@@ -6,21 +6,22 @@ uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
   {$ENDIF}{$ENDIF}
-  Classes, SysUtils, CustApp
-  { you can add units after this };
+  Classes, SysUtils, CustApp, bufstream, global, datawh;
 
 type
 
   { TMyApplication }
 
   TMyApplication = class(TCustomApplication)
+  private
   protected
     procedure DoRun; override;
+    procedure WriteHelp; virtual;
     procedure ReadFile(_filename: String);
+    procedure UpdateConnectionType(_contype: String);
   public
     constructor Create(TheOwner: TComponent); override;
     destructor Destroy; override;
-    procedure WriteHelp; virtual;
   end;
 
 { TMyApplication }
@@ -30,7 +31,7 @@ var
   ErrorMsg: String;
 begin
   // quick check parameters
-  ErrorMsg:=CheckOptions('h', 'help');
+  ErrorMsg:=CheckOptions('hf:c:', '');
   if ErrorMsg<>'' then begin
     ShowException(Exception.Create(ErrorMsg));
     Terminate;
@@ -38,7 +39,7 @@ begin
   end;
 
   // parse parameters
-  if HasOption('h', 'help') then begin
+  if HasOption('h') then begin
     WriteHelp;
     Terminate;
     Exit;
@@ -46,6 +47,12 @@ begin
 
   if HasOption('f') then begin
     ReadFile(GetOptionValue('f'));
+    Terminate;
+    Exit;
+  end;
+
+  if HasOption('c') then begin
+    UpdateConnectionType(GetOptionValue('c'));
     Terminate;
     Exit;
   end;
@@ -58,27 +65,23 @@ end;
 
 procedure TMyApplication.ReadFile(_filename: String);
 var
-    tfDMIFile: TextFile;
-    sLine: String;
+    slData: TStringList;
 begin
-    AssignFile(tfDMIFile, _filename);
+    if FileExists(_filename) then begin
+      try
+        slData:=TStringList.Create;
+        slData.LoadFromFile(_filename);
 
-    try
-      reset(tfDMIFile);
-
-      while not eof(tfDMIFile) do
-      begin
-        readln(tfDMIFile, sLine);
-        writeln(sLine);
-      end;
-
-      CloseFile(tfDMIFile);
-    except
-      on E: EInOutError do
-      begin
-        writeln('A DMI Dump file handling error occured. Details: ', E.Message);
+        writeln(slData.Text);
+      finally
+        FreeAndNil(slData);
       end;
     end;
+end;
+
+procedure TMyApplication.UpdateConnectionType(_contype: String);
+begin
+  updateDefaultConnectorType(_contype);
 end;
 
 constructor TMyApplication.Create(TheOwner: TComponent);
@@ -94,9 +97,9 @@ end;
 
 procedure TMyApplication.WriteHelp;
 begin
-  { add your help code here }
-  writeln('Usage: ', ExeName, ' -h');
-  writeln('-f <filename>');
+  writeln('Usage: ', ExeName, ' -h -f <filename>');
+  writeln('-h: Shows this help screen');
+  writeln('-f <filename>: Defines file to read');
 end;
 
 var
