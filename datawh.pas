@@ -15,10 +15,20 @@ type
 
   TDataWarehouse = class(TObject)
   private
+    const version: Integer = 1;
+    const dbName: String = 'fwupd_db';
+    var fconnection: TSQLConnector;
+    var ftransaction: TSQLTransaction;
     function getMBVersions: TStringList;
+    function createConnection: TSQLConnector;
+    function getQuery(_sql: String): TSQLQuery;
+  protected
   public
     var defaultConnectorType: String; static;
     property mbVersions: TStringList read getMBVersions;
+    constructor Create; virtual;
+    destructor Destroy; override;
+    procedure initDatabase;
   end;
 
 implementation
@@ -27,15 +37,64 @@ implementation
 
 function TDataWarehouse.getMBVersions: TStringList;
 var
-  sqlConnector: TSQLConnector;
+  sqlQuery: TSQLQuery;
 begin
   getMBVersions:=TStringList.Create;
-  sqlConnector:=TSQLConnector.Create(nil);
+  sqlQuery:=getQuery('select t.mbversion from mbversion t');
 
   try
+    while not sqlQuery.Eof do
+    begin
+      getMBVersions.Append(sqlQuery.FieldByName('mbversion').AsString);
+      sqlQuery.Next;
+    end;
 
+    sqlQuery.Close;
   finally
-    FreeAndNil(sqlConnector);
+    FreeAndNil(sqlQuery);
+  end;
+end;
+
+function TDataWarehouse.createConnection: TSQLConnector;
+begin
+  createConnection:=TSQLConnector.Create(nil);
+  createConnection.ConnectorType:=TDataWarehouse.defaultConnectorType;
+  createConnection.DatabaseName:=dbName;
+end;
+
+function TDataWarehouse.getQuery(_sql: String): TSQLQuery;
+begin
+  getQuery:=TSQLQuery.Create(fconnection);
+
+  getQuery.SQL.Text:=_sql;
+  getQuery.DataBase:=fconnection;
+  getQuery.Transaction:=ftransaction;
+  getQuery.Open;
+end;
+
+constructor TDataWarehouse.Create;
+begin
+  inherited;
+  fconnection:=createConnection;
+  ftransaction:=TSQLTransaction.Create(fconnection);
+  fconnection.Transaction:=ftransaction;
+end;
+
+destructor TDataWarehouse.Destroy;
+begin
+  FreeAndNil(ftransaction);
+  FreeAndNil(fconnection);
+  inherited Destroy;
+end;
+
+procedure TDataWarehouse.initDatabase;
+begin
+  if not FileExists(dbName) then begin
+    fconnection.Open;
+    ftransaction.Active:=True;
+    fconnection.ExecuteDirect('create table "mbversion"("mbversion" Char(128) not null primary key);');
+    fconnection.ExecuteDirect('create unique index "mbversion_uidx" on "mbversion"("mbversion");');
+    ftransaction.Commit;
   end;
 end;
 
@@ -74,7 +133,6 @@ begin
 end;
 
 initialization
-  updateDefaultConnectorType;
 
 end.
 

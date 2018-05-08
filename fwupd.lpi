@@ -22,6 +22,7 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
+        <CommandLineParams Value="-c SQLite3"/>
       </local>
     </RunParams>
     <Units Count="3">

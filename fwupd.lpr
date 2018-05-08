@@ -14,17 +14,30 @@ type
 
   TMyApplication = class(TCustomApplication)
   private
+    fdwh: TDataWarehouse;
+    function getDWH: TDataWarehouse;
   protected
     procedure DoRun; override;
     procedure WriteHelp; virtual;
     procedure ReadFile(_filename: String);
     procedure UpdateConnectionType(_contype: String);
+    property dwh: TDataWarehouse read getDWH;
   public
     constructor Create(TheOwner: TComponent); override;
     destructor Destroy; override;
   end;
 
 { TMyApplication }
+
+function TMyApplication.getDWH: TDataWarehouse;
+begin
+  if not Assigned(fdwh) then begin
+    fdwh:=TDataWarehouse.Create;
+    fdwh.initDatabase;
+  end;
+
+  getDWH:=fdwh;
+end;
 
 procedure TMyApplication.DoRun;
 var
@@ -47,16 +60,17 @@ begin
 
   if HasOption('f') then begin
     ReadFile(GetOptionValue('f'));
-    Terminate;
-    Exit;
   end;
 
   if HasOption('c') then begin
     UpdateConnectionType(GetOptionValue('c'));
-    Terminate;
-    Exit;
   end;
 
+  if TDataWarehouse.defaultConnectorType = '' then begin
+    updateDefaultConnectorType;
+  end;
+
+  writeln(dwh.mbVersions.Text);
   { add your program here }
 
   // stop program loop
@@ -97,9 +111,10 @@ end;
 
 procedure TMyApplication.WriteHelp;
 begin
-  writeln('Usage: ', ExeName, ' -h -f <filename>');
+  writeln('Usage: ', ExeName, ' -h -f <filename> -c <connector type>');
   writeln('-h: Shows this help screen');
   writeln('-f <filename>: Defines file to read');
+  writeln('-c <connector type>: Sets a DB driver to operate with');
 end;
 
 var
