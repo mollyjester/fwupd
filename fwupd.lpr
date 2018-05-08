@@ -6,7 +6,7 @@ uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
   {$ENDIF}{$ENDIF}
-  Classes, SysUtils, CustApp, bufstream, global, datawh;
+  Classes, SysUtils, CustApp, global, datawh, dmidata;
 
 type
 
@@ -15,13 +15,15 @@ type
   TMyApplication = class(TCustomApplication)
   private
     fdwh: TDataWarehouse;
+    fdmi: TDMIData;
+    function getDMI: TDMIData;
     function getDWH: TDataWarehouse;
   protected
     procedure DoRun; override;
     procedure WriteHelp; virtual;
-    procedure ReadFile(_filename: String);
     procedure UpdateConnectionType(_contype: String);
     property dwh: TDataWarehouse read getDWH;
+    property dmi: TDMIData read getDMI;
   public
     constructor Create(TheOwner: TComponent); override;
     destructor Destroy; override;
@@ -39,12 +41,21 @@ begin
   getDWH:=fdwh;
 end;
 
+function TMyApplication.getDMI: TDMIData;
+begin
+  if not Assigned(fdmi) then begin
+    fdmi:=TDMIData.Create;
+  end;
+
+  getDMI:=fdmi;
+end;
+
 procedure TMyApplication.DoRun;
 var
   ErrorMsg: String;
 begin
   // quick check parameters
-  ErrorMsg:=CheckOptions('hf:c:', '');
+  ErrorMsg:=CheckOptions('hc:', '');
   if ErrorMsg<>'' then begin
     ShowException(Exception.Create(ErrorMsg));
     Terminate;
@@ -58,10 +69,6 @@ begin
     Exit;
   end;
 
-  if HasOption('f') then begin
-    ReadFile(GetOptionValue('f'));
-  end;
-
   if HasOption('c') then begin
     UpdateConnectionType(GetOptionValue('c'));
   end;
@@ -70,27 +77,14 @@ begin
     updateDefaultConnectorType;
   end;
 
-  writeln(dwh.mbVersions.Text);
-  { add your program here }
+  if dwh.mbVersions.IndexOf(dmi.mbVersion) <> -1 then begin
+    writeln('Motherboard ', dmi.mbVersion, ' found.');
+  end
+  else begin
+    writeln('Motherboard ', dmi.mbVersion, ' not found.');
+  end;
 
-  // stop program loop
   Terminate;
-end;
-
-procedure TMyApplication.ReadFile(_filename: String);
-var
-    slData: TStringList;
-begin
-    if FileExists(_filename) then begin
-      try
-        slData:=TStringList.Create;
-        slData.LoadFromFile(_filename);
-
-        writeln(slData.Text);
-      finally
-        FreeAndNil(slData);
-      end;
-    end;
 end;
 
 procedure TMyApplication.UpdateConnectionType(_contype: String);
