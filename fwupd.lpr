@@ -6,7 +6,7 @@ uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
   {$ENDIF}{$ENDIF}
-  Classes, SysUtils, CustApp, global, datawh, dmidata;
+  Classes, SysUtils, CustApp, datawh, dmidata;
 
 type
 

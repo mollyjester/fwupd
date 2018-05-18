@@ -8,16 +8,40 @@ uses
   Classes, SysUtils, dbf, db;
 
 type
+
+  { TTableFieldMeta }
+
+  TTableFieldMeta = class(TObject)
+  private
+    FName: String;
+    FFieldType: TFieldType;
+    FSize: Word;
+    FRequired: Boolean;
+  public
+    property Name: String read FName;
+    property FieldType: TFieldType read FFieldType;
+    property Size: Word read FSize;
+    property Required: Boolean read FRequired;
+
+    constructor Create(_name: String;
+                       _fieldType: TFieldType;
+                       _size: Word = 0;
+                       _required: Boolean = True); virtual;
+  end;
   
   { TDataWarehouse }
 
   TDataWarehouse = class(TObject)
   private
-    const version: Integer = 1;
     const dbName: String = '/db/';
+    const tblManufacturer: String = 'manufacturer.dbf';
     const tblMBVersion: String = 'mbversion.dbf';
+    const tblBIOSDate: String = 'biosdate.dbf';
+
     var fdbf: TDbf;
     function getMBVersions: TStringList;
+    procedure createTable(_tablename: String;
+                          const _fields: array of TTableFieldMeta);
   protected
   public
     property mbVersions: TStringList read getMBVersions;
@@ -27,6 +51,21 @@ type
   end;
 
 implementation
+
+{ TTableFieldMeta }
+
+constructor TTableFieldMeta.Create(
+  _name: String;
+  _fieldType: TFieldType;
+  _size: Word = 0;
+  _required: Boolean = True);
+begin
+  inherited Create;
+  FName:=_name;
+  FFieldType:=_fieldType;
+  FSize:=_size;
+  FRequired:=_required;
+end;
 
 { TDataWarehouse }
 
@@ -45,6 +84,33 @@ begin
   fdbf.Close;
 end;
 
+procedure TDataWarehouse.createTable(
+  _tablename: String;
+  const _fields: array of TTableFieldMeta);
+var
+  i: Integer;
+  cnt: Integer;
+  fieldMeta: TTableFieldMeta;
+begin
+  cnt:=Length(_fields);
+
+  if (cnt > 0)
+    and not FileExists(GetCurrentDir() + dbName + _tablename) then begin
+      fdbf.Exclusive:=True;
+      fdbf.TableName:=_tablename;
+
+      fdbf.FieldDefs.Clear;
+
+      for i:=0 to cnt - 1 do begin
+        fieldMeta:=_fields[i];
+        fdbf.FieldDefs.Add(fieldMeta.Name, fieldMeta.FieldType, fieldMeta.Size, fieldMeta.Required);
+      end;
+
+      fdbf.CreateTable;
+      fdbf.Close;
+    end;
+end;
+
 constructor TDataWarehouse.Create;
 begin
   inherited;
@@ -61,17 +127,13 @@ end;
 
 procedure TDataWarehouse.initDatabase;
 begin
-  if not FileExists(GetCurrentDir() + dbName + tblMBVersion) then begin
-    fdbf.Exclusive:=True;
-    fdbf.TableName:=tblMBVersion;
-    with fdbf.FieldDefs do begin
-//      Add('Id', ftAutoInc, 0, True);
-      Add('mbVersion', ftString, 80, True);
-    end;
-
-    fdbf.CreateTable;
-    fdbf.Close;
-  end;
+  createTable(tblManufacturer, [TTableFieldMeta.Create('manufacturer', ftString, 100)]);
+  createTable(tblMBVersion,
+              [TTableFieldMeta.Create('manufacturer', ftString, 100),
+               TTableFieldMeta.Create('mbVersion', ftString, 80)]);
+  createTable(tblBIOSDate,
+              [TTableFieldMeta.Create('mbVersion', ftString, 80),
+               TTableFieldMeta.Create('BIOSDate', ftDateTime)]);
 end;
 
 initialization
