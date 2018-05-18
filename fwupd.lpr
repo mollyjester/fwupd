@@ -99,7 +99,6 @@ var
   Application: TMyApplication;
 begin
   Application:=TMyApplication.Create(nil);
-  Application.Title:='fwupd';
   Application.Run;
   Application.Free;
 end.

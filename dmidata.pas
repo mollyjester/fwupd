@@ -7,11 +7,11 @@ interface
 uses
   Classes, SysUtils, process;
 
-{$IFDEF WINDOWS}
+{$IFDEF GO32V2 OR $IFDEF MSDOS}
 const dmiProc = 'dmidec~1.exe';
-{$ELSE}
+{$ELSE}{$IFDEF LINUX}
 const dmiProc = '/usr/sbin/dmidecode';
-{$ENDIF}
+{$ENDIF}{$ENDIF}
 
 
 type

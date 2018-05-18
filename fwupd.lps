@@ -7,14 +7,14 @@
       <Unit0>
         <Filename Value="fwupd.lpr"/>
         <IsPartOfProject Value="True"/>
-        <TopLine Value="60"/>
-        <CursorPos Y="71"/>
-        <UsageCount Value="60"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="34"/>
+        <CursorPos X="14" Y="14"/>
+        <UsageCount Value="61"/>
         <Loaded Value="True"/>
       </Unit0>
       <Unit1>
         <Filename Value="global.pas"/>
-        <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos Y="12"/>
         <UsageCount Value="53"/>
@@ -25,16 +25,15 @@
         <EditorIndex Value="2"/>
         <TopLine Value="44"/>
         <CursorPos X="33" Y="73"/>
-        <UsageCount Value="51"/>
+        <UsageCount Value="52"/>
         <Loaded Value="True"/>
       </Unit2>
       <Unit3>
         <Filename Value="dmidata.pas"/>
         <IsPartOfProject Value="True"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
-        <CursorPos X="31" Y="12"/>
-        <UsageCount Value="36"/>
+        <CursorPos X="17" Y="14"/>
+        <UsageCount Value="37"/>
         <Loaded Value="True"/>
       </Unit3>
       <Unit4>
