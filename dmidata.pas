@@ -5,12 +5,12 @@ unit dmidata;
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils, process;
 
 {$IFDEF WINDOWS}
 const dmiProc = 'dmidec~1.exe';
 {$ELSE}
-const dmiProc = 'dmidecode';
+const dmiProc = '/usr/sbin/dmidecode';
 {$ENDIF}
 
 
@@ -25,11 +25,13 @@ type
     const cmdBIOSDate: String = '-s bios-release-date'; //05/16/2013
 
     function getDate: TDateTime;
+    function getManufacturer: String;
     function getVersion: String;
     procedure ReadFile(_filename: String);
   public
     property mbVersion: String read getVersion;
     property biosDate: TDateTime read getDate;
+    property mbManufacturer: String read getManufacturer;
   end;
 
 implementation
@@ -38,15 +40,22 @@ implementation
 
 function TDMIData.getDate: TDateTime;
 var
+  sDate: String;
   fsSettings: TFormatSettings;
 begin
-  fsSettings.ShortDateFormat:='d.m.y';
-  getDate:=StrToDate('16.05.2013', fsSettings);
+  RunCommand(dmiProc, [cmdBIOSDate], sDate);
+  fsSettings.ShortDateFormat:='m.d.y';
+  getDate:=StrToDate(sDate, fsSettings);
+end;
+
+function TDMIData.getManufacturer: String;
+begin
+  RunCommand(dmiProc, [cmdMBManufacturer], getManufacturer);
 end;
 
 function TDMIData.getVersion: String;
 begin
-  getVersion:='Z87-HD3';
+  RunCommand(dmiProc, [cmdMBVersion], getVersion);
 end;
 
 procedure TDMIData.ReadFile(_filename: String);

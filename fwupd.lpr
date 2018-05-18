@@ -91,10 +91,8 @@ end;
 
 procedure TMyApplication.WriteHelp;
 begin
-  writeln('Usage: ', ExeName, ' -h -f <filename> -c <connector type>');
+  writeln('Usage: ', ExeName, ' -h');
   writeln('-h: Shows this help screen');
-  writeln('-f <filename>: Defines file to read');
-  writeln('-c <connector type>: Sets a DB driver to operate with');
 end;
 
 var

@@ -33,12 +33,13 @@ type
 
   TDataWarehouse = class(TObject)
   private
+    fdbf: TDbf;
+
     const dbName: String = '/db/';
     const tblManufacturer: String = 'manufacturer.dbf';
     const tblMBVersion: String = 'mbversion.dbf';
     const tblBIOSDate: String = 'biosdate.dbf';
 
-    var fdbf: TDbf;
     function getMBVersions: TStringList;
     procedure createTable(_tablename: String;
                           const _fields: array of TTableFieldMeta);
