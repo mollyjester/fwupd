@@ -21,7 +21,6 @@ type
   protected
     procedure DoRun; override;
     procedure WriteHelp; virtual;
-    procedure UpdateConnectionType(_contype: String);
     property dwh: TDataWarehouse read getDWH;
     property dmi: TDMIData read getDMI;
   public
@@ -55,7 +54,7 @@ var
   ErrorMsg: String;
 begin
   // quick check parameters
-  ErrorMsg:=CheckOptions('hc:', '');
+  ErrorMsg:=CheckOptions('h', '');
   if ErrorMsg<>'' then begin
     ShowException(Exception.Create(ErrorMsg));
     Terminate;
@@ -69,14 +68,6 @@ begin
     Exit;
   end;
 
-  if HasOption('c') then begin
-    UpdateConnectionType(GetOptionValue('c'));
-  end;
-
-  if TDataWarehouse.defaultConnectorType = '' then begin
-    updateDefaultConnectorType;
-  end;
-
   if dwh.mbVersions.IndexOf(dmi.mbVersion) <> -1 then begin
     writeln('Motherboard ', dmi.mbVersion, ' found.');
   end
@@ -85,11 +76,6 @@ begin
   end;
 
   Terminate;
-end;
-
-procedure TMyApplication.UpdateConnectionType(_contype: String);
-begin
-  updateDefaultConnectorType(_contype);
 end;
 
 constructor TMyApplication.Create(TheOwner: TComponent);

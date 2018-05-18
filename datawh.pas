@@ -5,9 +5,7 @@ unit datawh;
 interface
 
 uses
-  Classes, SysUtils, sqldb, sqlite3conn;
-
-procedure updateDefaultConnectorType(_contype: String = '');
+  Classes, SysUtils, dbf, db;
 
 type
   
@@ -16,15 +14,12 @@ type
   TDataWarehouse = class(TObject)
   private
     const version: Integer = 1;
-    const dbName: String = 'fwupd_db';
-    var fconnection: TSQLConnector;
-    var ftransaction: TSQLTransaction;
+    const dbName: String = '/db/';
+    const tblMBVersion: String = 'mbversion.dbf';
+    var fdbf: TDbf;
     function getMBVersions: TStringList;
-    function createConnection: TSQLConnector;
-    function getQuery(_sql: String): TSQLQuery;
   protected
   public
-    var defaultConnectorType: String; static;
     property mbVersions: TStringList read getMBVersions;
     constructor Create; virtual;
     destructor Destroy; override;
@@ -36,99 +31,46 @@ implementation
 { TDataWarehouse }
 
 function TDataWarehouse.getMBVersions: TStringList;
-var
-  sqlQuery: TSQLQuery;
 begin
   getMBVersions:=TStringList.Create;
-  sqlQuery:=getQuery('select t.mbversion from mbversion t');
+  fdbf.TableName:=tblMBVersion;
+  fdbf.Open;
 
-  try
-    while not sqlQuery.Eof do
-    begin
-      getMBVersions.Append(sqlQuery.FieldByName('mbversion').AsString);
-      sqlQuery.Next;
-    end;
-
-    sqlQuery.Close;
-  finally
-    FreeAndNil(sqlQuery);
+  while not fdbf.EOF do
+  begin
+    getMBVersions.Append(fdbf.FieldByName('mbversion').AsString);
+    fdbf.Next;
   end;
-end;
 
-function TDataWarehouse.createConnection: TSQLConnector;
-begin
-  createConnection:=TSQLConnector.Create(nil);
-  createConnection.ConnectorType:=TDataWarehouse.defaultConnectorType;
-  createConnection.DatabaseName:=dbName;
-end;
-
-function TDataWarehouse.getQuery(_sql: String): TSQLQuery;
-begin
-  getQuery:=TSQLQuery.Create(fconnection);
-
-  getQuery.SQL.Text:=_sql;
-  getQuery.DataBase:=fconnection;
-  getQuery.Transaction:=ftransaction;
-  getQuery.Open;
+  fdbf.Close;
 end;
 
 constructor TDataWarehouse.Create;
 begin
   inherited;
-  fconnection:=createConnection;
-  ftransaction:=TSQLTransaction.Create(fconnection);
-  fconnection.Transaction:=ftransaction;
+  fdbf:=TDbf.Create(nil);
+  fdbf.FilePathFull:=GetCurrentDir() + dbName;
+  fdbf.TableLevel:=3;
 end;
 
 destructor TDataWarehouse.Destroy;
 begin
-  FreeAndNil(ftransaction);
-  FreeAndNil(fconnection);
+  FreeAndNil(fdbf);
   inherited Destroy;
 end;
 
 procedure TDataWarehouse.initDatabase;
 begin
-  if not FileExists(dbName) then begin
-    fconnection.Open;
-    ftransaction.Active:=True;
-    fconnection.ExecuteDirect('create table "mbversion"("mbversion" Char(128) not null primary key);');
-    fconnection.ExecuteDirect('create unique index "mbversion_uidx" on "mbversion"("mbversion");');
-    ftransaction.Commit;
-  end;
-end;
-
-procedure updateDefaultConnectorType(_contype: String = '');
-var
-  slConTypes:TStringList;
-  i: Integer;
-  cnt: Integer;
-  choice: Integer;
-begin
-  slConTypes:=TStringList.Create;
-  GetConnectionList(slConTypes);
-
-  if _contype <> '' then begin
-    if slConTypes.IndexOf(_contype) <> -1 then begin
-      TDataWarehouse.defaultConnectorType:=_contype;
-    end
-    else begin
-      raise Exception.Create(Format('Unregistered connection type ''%s''', [_contype]));
+  if not FileExists(GetCurrentDir() + dbName + tblMBVersion) then begin
+    fdbf.Exclusive:=True;
+    fdbf.TableName:=tblMBVersion;
+    with fdbf.FieldDefs do begin
+//      Add('Id', ftAutoInc, 0, True);
+      Add('mbVersion', ftString, 80, True);
     end;
-  end
-  else begin
-    cnt:=slConTypes.Count;
 
-    if cnt > 0 then begin
-      writeln('Pick a connection type:');
-
-      for i:=0 to cnt - 1 do begin
-        writeln(i, '.', slConTypes[i]);
-      end;
-
-      ReadLn(choice);
-      TDataWarehouse.defaultConnectorType:=slConTypes[choice];
-    end;
+    fdbf.CreateTable;
+    fdbf.Close;
   end;
 end;
 
