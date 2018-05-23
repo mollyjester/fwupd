@@ -20,42 +20,41 @@ type
 
   TDMIData = class(TObject)
   private
-    const cmdMBVersion: String = '-s baseboard-product-name'; //Z87-HD3
-    const cmdMBManufacturer: String = '-s baseboard-manufacturer'; //Gigabyte Technology Co., Ltd.
-    const cmdBIOSDate: String = '-s bios-release-date'; //05/16/2013
-
-    function getDate: TDateTime;
-    function getManufacturer: String;
-    function getVersion: String;
+    function getDMIDump(): TStrings;
     procedure ReadFile(_filename: String);
   public
-    property mbVersion: String read getVersion;
-    property biosDate: TDateTime read getDate;
-    property mbManufacturer: String read getManufacturer;
+    property dmiDump: TStrings read getDMIDump;
   end;
 
 implementation
 
 { TDMIData }
 
-function TDMIData.getDate: TDateTime;
+function TDMIData.getDMIDump: TStrings;
 var
-  sDate: String;
-  fsSettings: TFormatSettings;
-begin
-  RunCommand(dmiProc, [cmdBIOSDate], sDate);
-  fsSettings.ShortDateFormat:='m.d.y';
-  getDate:=StrToDate(sDate, fsSettings);
-end;
+  hprocess: TProcess;
+  sPass: String;
+  OutputLines: TStringList;
 
-function TDMIData.getManufacturer: String;
 begin
-  RunCommand(dmiProc, [cmdMBManufacturer], getManufacturer);
-end;
+  sPass := 'NUKE32dll';
+  OutputLines:=TStringList.Create; //... a try...finally block would be nice to make sure
 
-function TDMIData.getVersion: String;
-begin
-  RunCommand(dmiProc, [cmdMBVersion], getVersion);
+  hProcess := TProcess.Create(nil);
+  hProcess.Executable := '/bin/sh';
+  hprocess.Parameters.Add('-c');
+  hprocess.Parameters.add('echo ' + sPass  + ' | sudo -S ' + dmiProc + ' -t 0,1,2');
+  hProcess.Options := hProcess.Options + [poWaitOnExit, poUsePipes];
+  hProcess.Execute;
+
+  OutputLines.Add('stdout:');
+  OutputLines.LoadFromStream(hprocess.Output);
+  OutputLines.Add('stderr:');
+  OutputLines.LoadFromStream(hProcess.Stderr);
+
+  getDMIDump:=OutputLines;
+
+  hProcess.Free;
 end;
 
 procedure TDMIData.ReadFile(_filename: String);

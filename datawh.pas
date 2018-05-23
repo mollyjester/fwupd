@@ -5,44 +5,20 @@ unit datawh;
 interface
 
 uses
-  Classes, SysUtils, dbf, db;
+  Classes, SysUtils, CsvDoc;
 
 type
 
-  { TTableFieldMeta }
-
-  TTableFieldMeta = class(TObject)
-  private
-    FName: String;
-    FFieldType: TFieldType;
-    FSize: Word;
-    FRequired: Boolean;
-  public
-    property Name: String read FName;
-    property FieldType: TFieldType read FFieldType;
-    property Size: Word read FSize;
-    property Required: Boolean read FRequired;
-
-    constructor Create(_name: String;
-                       _fieldType: TFieldType;
-                       _size: Word = 0;
-                       _required: Boolean = True); virtual;
-  end;
-  
   { TDataWarehouse }
 
   TDataWarehouse = class(TObject)
   private
-    fdbf: TDbf;
+    FCSV: TCSVDocument;
 
     const dbName: String = '/db/';
-    const tblManufacturer: String = 'manufacturer.dbf';
-    const tblMBVersion: String = 'mbversion.dbf';
-    const tblBIOSDate: String = 'biosdate.dbf';
+    const tblMBVersion: String = 'mbver.csv';
 
     function getMBVersions: TStringList;
-    procedure createTable(_tablename: String;
-                          const _fields: array of TTableFieldMeta);
   protected
   public
     property mbVersions: TStringList read getMBVersions;
@@ -53,88 +29,47 @@ type
 
 implementation
 
-{ TTableFieldMeta }
-
-constructor TTableFieldMeta.Create(
-  _name: String;
-  _fieldType: TFieldType;
-  _size: Word = 0;
-  _required: Boolean = True);
-begin
-  inherited Create;
-  FName:=_name;
-  FFieldType:=_fieldType;
-  FSize:=_size;
-  FRequired:=_required;
-end;
-
 { TDataWarehouse }
 
 function TDataWarehouse.getMBVersions: TStringList;
-begin
-  getMBVersions:=TStringList.Create;
-  fdbf.TableName:=tblMBVersion;
-  fdbf.Open;
-
-  while not fdbf.EOF do
-  begin
-    getMBVersions.Append(fdbf.FieldByName('mbversion').AsString);
-    fdbf.Next;
-  end;
-
-  fdbf.Close;
-end;
-
-procedure TDataWarehouse.createTable(
-  _tablename: String;
-  const _fields: array of TTableFieldMeta);
 var
   i: Integer;
   cnt: Integer;
-  fieldMeta: TTableFieldMeta;
 begin
-  cnt:=Length(_fields);
+  getMBVersions:=TStringList.Create;
 
-  if (cnt > 0)
-    and not FileExists(GetCurrentDir() + dbName + _tablename) then begin
-      fdbf.Exclusive:=True;
-      fdbf.TableName:=_tablename;
+  cnt:=FCSV.RowCount;
 
-      fdbf.FieldDefs.Clear;
-
-      for i:=0 to cnt - 1 do begin
-        fieldMeta:=_fields[i];
-        fdbf.FieldDefs.Add(fieldMeta.Name, fieldMeta.FieldType, fieldMeta.Size, fieldMeta.Required);
-      end;
-
-      fdbf.CreateTable;
-      fdbf.Close;
-    end;
+  for i:=1 to cnt - 1 do begin
+    getMBVersions.Append(FCSV.Cells[0, i]);
+  end;
 end;
 
 constructor TDataWarehouse.Create;
 begin
   inherited;
-  fdbf:=TDbf.Create(nil);
-  fdbf.FilePathFull:=GetCurrentDir() + dbName;
-  fdbf.TableLevel:=3;
+  FCSV:=TCSVDocument.Create;
+  FCSV.Delimiter:=';';
 end;
 
 destructor TDataWarehouse.Destroy;
 begin
-  FreeAndNil(fdbf);
+  FreeAndNil(FCSV);
   inherited Destroy;
 end;
 
 procedure TDataWarehouse.initDatabase;
 begin
-  createTable(tblManufacturer, [TTableFieldMeta.Create('manufacturer', ftString, 100)]);
-  createTable(tblMBVersion,
-              [TTableFieldMeta.Create('manufacturer', ftString, 100),
-               TTableFieldMeta.Create('mbVersion', ftString, 80)]);
-  createTable(tblBIOSDate,
-              [TTableFieldMeta.Create('mbVersion', ftString, 80),
-               TTableFieldMeta.Create('BIOSDate', ftDateTime)]);
+  if not FileExists(GetCurrentDir() + dbName + tblMBVersion) then begin
+    FCSV.Cells[0, 0]:='mbversion';
+    FCSV.Cells[1, 0]:='updater';
+    FCSV.Cells[2, 0]:='param_fmt';
+    FCSV.Cells[3, 0]:='firmware';
+    FCSV.SaveToFile(GetCurrentDir() + dbName + tblMBVersion);
+  end
+  else begin
+    FCSV.LoadFromFile(GetCurrentDir() + dbName + tblMBVersion);
+  end;
 end;
 
 initialization

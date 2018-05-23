@@ -52,6 +52,7 @@ end;
 procedure TMyApplication.DoRun;
 var
   ErrorMsg: String;
+  sMB: String = 'aaa';
 begin
   // quick check parameters
   ErrorMsg:=CheckOptions('h', '');
@@ -68,11 +69,21 @@ begin
     Exit;
   end;
 
-  if dwh.mbVersions.IndexOf(dmi.mbVersion) <> -1 then begin
-    writeln('Motherboard ', dmi.mbVersion, ' found.');
-  end
-  else begin
-    writeln('Motherboard ', dmi.mbVersion, ' not found.');
+  try
+    writeln(dmi.dmiDump.Text);
+
+    if dwh.mbVersions.IndexOf(sMB) <> -1 then begin
+      writeln(Format('Motherboard %s found.', [sMB]));
+    end
+    else begin
+      raise Exception.Create(Format('Motherboard %s not found!', [sMB]));
+    end;
+  except
+    on E:Exception do
+    begin
+      ExceptionExitCode:=-1;
+      writeln(E.Message);
+    end;
   end;
 
   Terminate;
