@@ -19,10 +19,11 @@ type
     function getDMI: TDMIData;
     function getDWH: TDataWarehouse;
   protected
-    procedure DoRun; override;
-    procedure WriteHelp; virtual;
     property dwh: TDataWarehouse read getDWH;
     property dmi: TDMIData read getDMI;
+    procedure DoRun; override;
+    procedure WriteHelp; virtual;
+    function findMB: String;
   public
     constructor Create(TheOwner: TComponent); override;
     destructor Destroy; override;
@@ -52,7 +53,8 @@ end;
 procedure TMyApplication.DoRun;
 var
   ErrorMsg: String;
-  sMB: String = 'aaa';
+  sMB: String;
+  mbRecord: TDataMBRecord;
 begin
   // quick check parameters
   ErrorMsg:=CheckOptions('h', '');
@@ -70,13 +72,21 @@ begin
   end;
 
   try
-    writeln(dmi.dmiDump.Text);
+    sMB:=findMB();
 
-    if dwh.mbVersions.IndexOf(sMB) <> -1 then begin
-      writeln(Format('Motherboard %s found.', [sMB]));
+    if sMB <> '' then begin
+      writeln(Format('Motherboard %s found', [sMB]));
+
+      mbRecord:=dwh.mbRecord[sMB];
+      writeln(Format('upd: %s, params: %s, fw: %s', [mbRecord.Updater,
+                                                     mbRecord.ParamFmt,
+                                                     mbRecord.Firmware]));
+      // check if updater exists
+      // check if firmware exists
+      // flash motherboard
     end
     else begin
-      raise Exception.Create(Format('Motherboard %s not found!', [sMB]));
+      raise Exception.Create('Motherboard not found!');
     end;
   except
     on E:Exception do
@@ -86,6 +96,7 @@ begin
     end;
   end;
 
+  ReadLn();
   Terminate;
 end;
 
@@ -104,6 +115,25 @@ procedure TMyApplication.WriteHelp;
 begin
   writeln('Usage: ', ExeName, ' -h');
   writeln('-h: Shows this help screen');
+end;
+
+function TMyApplication.findMB: String;
+var
+  i: Integer;
+  cnt: Integer;
+  mb: String;
+begin
+  cnt:=dwh.mbVersions.Count;
+
+  for i:=0 to cnt - 1 do
+  begin
+    mb:=dwh.mbVersions[i];
+
+    if Pos(mb, dmi.dmiDump.Text) <> 0 then begin
+      findMB:=mb;
+      break;
+    end;
+  end;
 end;
 
 var

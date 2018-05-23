@@ -7,12 +7,7 @@ interface
 uses
   Classes, SysUtils, process;
 
-{$IFDEF GO32V2 OR $IFDEF MSDOS}
-const dmiProc = 'dmidec~1.exe';
-{$ELSE}{$IFDEF LINUX}
-const dmiProc = '/usr/sbin/dmidecode';
-{$ENDIF}{$ENDIF}
-
+const dmiProc = 'dmidecode.exe';
 
 type
   
@@ -32,29 +27,48 @@ implementation
 
 function TDMIData.getDMIDump: TStrings;
 var
-  hprocess: TProcess;
-  sPass: String;
-  OutputLines: TStringList;
-
+  sOut: String;
+  i: Integer;
+  cnt: Integer;
+  sLine: String;
+  trimmedLine: String;
 begin
-  sPass := 'NUKE32dll';
-  OutputLines:=TStringList.Create; //... a try...finally block would be nice to make sure
+  getDMIDump:=TStringList.Create;
 
-  hProcess := TProcess.Create(nil);
-  hProcess.Executable := '/bin/sh';
-  hprocess.Parameters.Add('-c');
-  hprocess.Parameters.add('echo ' + sPass  + ' | sudo -S ' + dmiProc + ' -t 0,1,2');
-  hProcess.Options := hProcess.Options + [poWaitOnExit, poUsePipes];
-  hProcess.Execute;
+  if RunCommandInDir('', dmiProc, ['-t 0,1,2'], sOut) then
+  begin
+    cnt:=Length(sOut);
 
-  OutputLines.Add('stdout:');
-  OutputLines.LoadFromStream(hprocess.Output);
-  OutputLines.Add('stderr:');
-  OutputLines.LoadFromStream(hProcess.Stderr);
+    for i:=1 to cnt do
+    begin
+      if sOut[i] = LineEnding[1] then
+      begin
+        trimmedLine:=Trim(sLine);
+        if trimmedLine <> '' then
+        begin
+          getDMIDump.Append(trimmedLine);
+        end;
+        sLine:='';
+      end
+      else
+      begin
+        sLine:=sLine + sOut[i];
+      end;
+    end;
 
-  getDMIDump:=OutputLines;
-
-  hProcess.Free;
+    if sLine <> '' then
+    begin
+      trimmedLine:=Trim(sLine);
+      if trimmedLine <> '' then
+      begin
+        getDMIDump.Append(trimmedLine);
+      end;
+    end;
+  end
+  else
+  begin
+    raise Exception.Create('Couldn''t run dmidecode!');
+  end;
 end;
 
 procedure TDMIData.ReadFile(_filename: String);
