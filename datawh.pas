@@ -230,12 +230,16 @@ end;
 
 procedure TDataWarehouse.initDatabase;
 begin
-  if not FileExists(FDBDir) then begin
-    FCSV.Cells[0, 0]:='mbversion';
-    FCSV.Cells[1, 0]:='updater';
-    FCSV.Cells[2, 0]:='param_fmt';
-    FCSV.Cells[3, 0]:='firmware';
-    FCSV.SaveToFile(FDBDir);
+  if not FileExists(FDBDir) then
+  begin
+    if ForceDirectories(ExtractFileDir(FDBDir)) then
+    begin
+      FCSV.Cells[0, 0]:='mbversion';
+      FCSV.Cells[1, 0]:='updater';
+      FCSV.Cells[2, 0]:='param_fmt';
+      FCSV.Cells[3, 0]:='firmware';
+      FCSV.SaveToFile(FDBDir);
+    end;
   end
 end;
 
