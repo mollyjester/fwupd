@@ -62,8 +62,7 @@ type
     FDBDir: String;
     FDBName: String;
 
-    const defaultDBName: String = '\db\';
-    const tblMBVersion: String = 'mbver.csv';
+    const defaultDBName: String = '\db\mbver.csv';
 
     function GetMBTable: TDataMBTable;
   protected
@@ -187,7 +186,7 @@ begin
     FMBTable:=TDataMBTable.Create;
 
     FCSV.Clear;
-    FCSV.LoadFromFile(FDBDir + tblMBVersion);
+    FCSV.LoadFromFile(FDBDir);
 
     for i:=0 to FCSV.RowCount - 1 do
     begin
@@ -231,12 +230,12 @@ end;
 
 procedure TDataWarehouse.initDatabase;
 begin
-  if not FileExists(FDBDir + tblMBVersion) then begin
+  if not FileExists(FDBDir) then begin
     FCSV.Cells[0, 0]:='mbversion';
     FCSV.Cells[1, 0]:='updater';
     FCSV.Cells[2, 0]:='param_fmt';
     FCSV.Cells[3, 0]:='firmware';
-    FCSV.SaveToFile(FDBDir + tblMBVersion);
+    FCSV.SaveToFile(FDBDir);
   end
 end;
 
