@@ -7,83 +7,48 @@ interface
 uses
   Classes, SysUtils, process;
 
-const dmiProc = 'dmidecode.exe';
-
 type
-  
+
+  ExceptionExecError = class(Exception);
+
   { TDMIData }
 
   TDMIData = class(TObject)
   private
-    function getDMIDump(): TStrings;
-    procedure ReadFile(_filename: String);
+    FDMIPath: String;
+
+    const defaultDMIPath = 'dmidecode.exe';
+
+    function getDMIDump(): String;
   public
-    property dmiDump: TStrings read getDMIDump;
+    constructor Create(_dmiPath: String = ''); virtual;
+
+    property dmiDump: String read getDMIDump;
   end;
 
 implementation
 
 { TDMIData }
 
-function TDMIData.getDMIDump: TStrings;
-var
-  sOut: String;
-  i: Integer;
-  cnt: Integer;
-  sLine: String;
-  trimmedLine: String;
+function TDMIData.getDMIDump(): String;
 begin
-  getDMIDump:=TStringList.Create;
-
-  if RunCommandInDir('', dmiProc, ['-t 0,1,2'], sOut) then
+  if not RunCommandInDir('', FDMIPath, ['-t 0,1,2'], Result) then
   begin
-    cnt:=Length(sOut);
-
-    for i:=1 to cnt do
-    begin
-      if sOut[i] = LineEnding[1] then
-      begin
-        trimmedLine:=Trim(sLine);
-        if trimmedLine <> '' then
-        begin
-          getDMIDump.Append(trimmedLine);
-        end;
-        sLine:='';
-      end
-      else
-      begin
-        sLine:=sLine + sOut[i];
-      end;
-    end;
-
-    if sLine <> '' then
-    begin
-      trimmedLine:=Trim(sLine);
-      if trimmedLine <> '' then
-      begin
-        getDMIDump.Append(trimmedLine);
-      end;
-    end;
-  end
-  else
-  begin
-    raise Exception.Create('Couldn''t run dmidecode!');
+    raise ExceptionExecError.CreateFmt('Couldn''t run %s!', [FDMIPath]);
   end;
 end;
 
-procedure TDMIData.ReadFile(_filename: String);
-var
-  slData: TStringList;
+constructor TDMIData.Create(_dmiPath: String = '');
 begin
-  if FileExists(_filename) then begin
-    try
-      slData:=TStringList.Create;
-      slData.LoadFromFile(_filename);
+  inherited Create;
 
-      writeln(slData.Text);
-    finally
-      FreeAndNil(slData);
-    end;
+  if _dmiPath <> '' then
+  begin
+    FDMIPath:=_dmiPath;
+  end
+  else
+  begin
+    FDMIPath:=defaultDMIPath;
   end;
 end;
 
