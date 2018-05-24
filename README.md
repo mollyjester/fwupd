@@ -8,3 +8,6 @@ the structure of .csv file:
 the first row is a column names whatever you like. 
 the other rows structure is:
 motherboard version;path\to\updater.exe;updater params with %s placeholder for firmware path;path\to\fimware.bin
+
+made with lazarus. thanks!
+also thanks to Vladimir Zhirov for CSVDocument unit.
