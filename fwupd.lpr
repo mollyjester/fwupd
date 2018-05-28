@@ -153,7 +153,6 @@ begin
     end;
   end;
 
-  ReadLn();
   Terminate;
 end;
 
@@ -172,7 +171,7 @@ procedure TMyApplication.WriteHelp;
 begin
   writeln('Usage: ', ExeName, ' -h');
   writeln('-h: Shows this help screen');
-  writeln('-d <path>: Location of dmidecode.exe');
+  writeln('-d <path>: Dump file of DMI data');
   writeln('-b <path>: Path to folder with .csv file');
   writeln('-s: Silent mode');
 end;

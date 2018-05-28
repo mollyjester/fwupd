@@ -5,7 +5,7 @@ unit dmidata;
 interface
 
 uses
-  Classes, SysUtils, process;
+  Classes, SysUtils;
 
 type
 
@@ -17,11 +17,11 @@ type
   private
     FDMIPath: String;
 
-    const defaultDMIPath = 'dmidecode.exe';
+    const defaultDMIPath: String = 'dmidecode.txt';
 
-    function getDMIDump(): String;
+    function getDMIDump: String;
   public
-    constructor Create(_dmiPath: String = ''); virtual;
+    constructor Create(_dmiPath: String = '');
 
     property dmiDump: String read getDMIDump;
   end;
@@ -32,9 +32,11 @@ implementation
 
 function TDMIData.getDMIDump(): String;
 begin
-  if not RunCommandInDir('', FDMIPath, ['-t 0,1,2'], Result) then
+  with TStringList.Create do
   begin
-    raise ExceptionExecError.CreateFmt('Couldn''t run %s!', [FDMIPath]);
+    LoadFromFile(FDMIPath);
+    Result:=Text;
+    Free;
   end;
 end;
 
