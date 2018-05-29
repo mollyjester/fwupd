@@ -8,8 +8,8 @@
         <Filename Value="fwupd.lpr"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="218"/>
-        <CursorPos X="15" Y="191"/>
+        <TopLine Value="213"/>
+        <CursorPos X="16" Y="230"/>
         <UsageCount Value="108"/>
         <Loaded Value="True"/>
       </Unit0>
@@ -238,7 +238,7 @@
         <UsageCount Value="10"/>
       </Unit34>
     </Units>
-    <JumpHistory Count="28" HistoryIndex="27">
+    <JumpHistory Count="29" HistoryIndex="28">
       <Position1>
         <Filename Value="dmidata.pas"/>
         <Caret Line="25" Column="50" TopLine="7"/>
@@ -349,6 +349,10 @@
         <Filename Value="fwupd.lpr"/>
         <Caret Line="32" Column="14" TopLine="15"/>
       </Position28>
+      <Position29>
+        <Filename Value="fwupd.lpr"/>
+        <Caret Line="237" Column="26" TopLine="206"/>
+      </Position29>
     </JumpHistory>
   </ProjectSession>
   <Debugging>

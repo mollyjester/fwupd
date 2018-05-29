@@ -226,16 +226,34 @@ begin
 end;
 
 function TMyApplication.CheckUpdater(_updater: String): Boolean;
+var
+  path: String;
 begin
-  Result:=FileExists(_updater);
+  path:=_updater;
+
+  if LeftStr(path, 1) <> '\' then
+  begin
+    path:='\' + path;
+  end;
+
+  Result:=FileExists(path);
 
   WriteLnS(' * updater: ' + ifthen(Result, 'OK',
       Format('%s not found!', [_updater])));
 end;
 
 function TMyApplication.CheckFirmware(_firmware: String): Boolean;
+var
+  path: String;
 begin
-  Result:=FileExists(_firmware);
+  path:=_firmware;
+
+  if LeftStr(path, 1) <> '\' then
+  begin
+    path:='\' + path;
+  end;
+
+  Result:=FileExists('\' + path);
 
   WriteLnS(' * firmware: ' + ifthen(Result, 'OK',
       Format('%s not found!', [_firmware])));
