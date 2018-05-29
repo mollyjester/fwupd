@@ -83,6 +83,8 @@ var
   i: Integer;
   rec: TDataMBRecord;
 begin
+  Result:=nil;
+
   for i:=0 to FList.Count - 1 do
   begin
     rec:=TDataMBRecord(FList[i]);
@@ -138,6 +140,8 @@ end;
 
 function TDataMBTable.HasRecord(_index: String): Boolean;
 begin
+  Result:=False;
+
   try
     if Assigned(GetRecord(_index)) then
     begin

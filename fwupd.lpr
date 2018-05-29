@@ -188,6 +188,8 @@ var
   i: Integer;
   mbRec: TDataMBRecord;
 begin
+  Result:=nil;
+
   for i:=0 to dwh.mbTable.Count - 1 do
   begin
     mbRec:=dwh.mbTable.recordsIdx[i];
