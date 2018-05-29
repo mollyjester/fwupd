@@ -9,20 +9,14 @@ uses
 
 type
 
-  ExceptionExecError = class(Exception);
-
   { TDMIData }
 
   TDMIData = class(TObject)
   private
     FDMIPath: String;
-
-    const defaultDMIPath: String = 'dmidecode.txt';
-
     function getDMIDump: String;
   public
-    constructor Create(_dmiPath: String = '');
-
+    constructor Create(_dmiPath: String);
     property dmiDump: String read getDMIDump;
   end;
 
@@ -40,7 +34,7 @@ begin
   end;
 end;
 
-constructor TDMIData.Create(_dmiPath: String = '');
+constructor TDMIData.Create(_dmiPath: String);
 begin
   inherited Create;
 
@@ -50,7 +44,7 @@ begin
   end
   else
   begin
-    FDMIPath:=defaultDMIPath;
+    raise Exception.Create('Dump file not specified!');
   end;
 end;
 

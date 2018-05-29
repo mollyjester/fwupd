@@ -62,7 +62,7 @@ type
     FDBDir: String;
     FDBName: String;
 
-    const defaultDBName: String = '\db\mbver.csv';
+    const defaultDBName: String = 'db\mbver.csv';
 
     function GetMBTable: TDataMBTable;
   protected
@@ -212,11 +212,11 @@ begin
 
   if _dbName <> '' then
   begin
-    FDBName:=_dbName;
+    FDBName:='\' + _dbName;
   end
   else
   begin
-    FDBName:=defaultDBName;
+    FDBName:='\' + defaultDBName;
   end;
 
   FDBDir:=GetCurrentDir() + FDBName;

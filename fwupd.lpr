@@ -58,8 +58,8 @@ begin
   curdir:=GetCurrentDir();
   WriteLnS('Checking parameters:');
 
-  Result:=CheckUpdater(curdir + _mbRec.Updater);
-  Result:=CheckFirmware(curdir + _mbRec.Firmware) and Result;
+  Result:=CheckUpdater(curdir + '\' + _mbRec.Updater);
+  Result:=CheckFirmware(curdir + '\' + _mbRec.Firmware) and Result;
 end;
 
 function TMyApplication.CheckDMIPath(_path: String): Boolean;
@@ -73,10 +73,10 @@ end;
 
 function TMyApplication.CheckDBPath(_path: String): Boolean;
 begin
-  Result:=DirectoryExists(_path);
+  Result:=FileExists(_path);
 
   if not Result then begin
-    WriteLnS(Format('Path %s not exists!', [_path]));
+    WriteLnS(Format('File %s not exists!', [_path]));
   end;
 end;
 
@@ -116,16 +116,22 @@ begin
   if HasOption('d') then begin
     FDMIPath:=GetOptionValue('d');
 
-    if not CheckDMIPath(FDMIPath) then begin
+    if not CheckDMIPath(GetCurrentDir() + '\' + FDMIPath) then begin
       Terminate(-1);
       Exit;
     end;
+  end
+  else
+  begin
+    WriteHelp;
+    Terminate(-1);
+    Exit;
   end;
 
   if HasOption('b') then begin
     FDBPath:=GetOptionValue('b');
 
-    if not CheckDBPath(FDBPath) then begin
+    if not CheckDBPath(GetCurrentDir() + '\' + FDBPath) then begin
       Terminate(-1);
       Exit;
     end;
@@ -226,34 +232,16 @@ begin
 end;
 
 function TMyApplication.CheckUpdater(_updater: String): Boolean;
-var
-  path: String;
 begin
-  path:=_updater;
-
-  if LeftStr(path, 1) <> '\' then
-  begin
-    path:='\' + path;
-  end;
-
-  Result:=FileExists(path);
+  Result:=FileExists(_updater);
 
   WriteLnS(' * updater: ' + ifthen(Result, 'OK',
       Format('%s not found!', [_updater])));
 end;
 
 function TMyApplication.CheckFirmware(_firmware: String): Boolean;
-var
-  path: String;
 begin
-  path:=_firmware;
-
-  if LeftStr(path, 1) <> '\' then
-  begin
-    path:='\' + path;
-  end;
-
-  Result:=FileExists('\' + path);
+  Result:=FileExists(_firmware);
 
   WriteLnS(' * firmware: ' + ifthen(Result, 'OK',
       Format('%s not found!', [_firmware])));
