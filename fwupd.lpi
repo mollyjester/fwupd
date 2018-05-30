@@ -23,7 +23,6 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="-b cb/cug.csv -i"/>
       </local>
     </RunParams>
     <Units Count="4">

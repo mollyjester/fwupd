@@ -117,8 +117,8 @@ begin
   begin
     FDBPath:=GetOptionValue('b');
 
-    if not CheckDBPath(GetCurrentDir() + '\' + FDBPath)
-    and not HasOption('i') then
+    if not HasOption('i')
+    and not CheckDBPath(GetCurrentDir() + '\' + FDBPath) then
     begin
       Terminate(-1);
       Exit;
