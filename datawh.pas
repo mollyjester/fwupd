@@ -66,10 +66,10 @@ type
 
     function GetMBTable: TDataMBTable;
   protected
-    procedure initDatabase;
   public
     constructor Create(_dbName: String = ''); virtual;
     destructor Destroy; override;
+    procedure initDatabase;
 
     property mbTable: TDataMBTable read GetMBTable;
   end;
@@ -222,7 +222,6 @@ begin
   FDBDir:=GetCurrentDir() + FDBName;
   FCSV:=TCSVDocument.Create;
   FCSV.Delimiter:=';';
-  initDatabase;
 end;
 
 destructor TDataWarehouse.Destroy;

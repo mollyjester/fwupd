@@ -33,6 +33,7 @@ type
     procedure DoRun; override;
     function FindMB: TDataMBRecord;
     function FlashMB(_mbRec: TDataMBRecord): Boolean;
+    procedure initDB;
     procedure WriteHelp; virtual;
     procedure WriteLnS(_value: String);
   public
@@ -95,25 +96,49 @@ var
   mbRec: TDataMBRecord;
 begin
   // quick check parameters
-  ErrorMsg:=CheckOptions('hd:b:s', '');
-  if ErrorMsg<>'' then begin
+  ErrorMsg:=CheckOptions('hd:b:si', '');
+
+  if ErrorMsg<>'' then
+  begin
     ShowException(Exception.Create(ErrorMsg));
     Terminate;
     Exit;
   end;
 
   // parse parameters
-  if HasOption('h') then begin
+  if HasOption('h') then
+  begin
     WriteHelp;
     Terminate;
     Exit;
   end;
 
-  if HasOption('s') then begin
+  if HasOption('b') then
+  begin
+    FDBPath:=GetOptionValue('b');
+
+    if not CheckDBPath(GetCurrentDir() + '\' + FDBPath)
+    and not HasOption('i') then
+    begin
+      Terminate(-1);
+      Exit;
+    end;
+  end;
+
+  if HasOption('i') then
+  begin
+    initDB;
+    Terminate;
+    Exit;
+  end;
+
+  if HasOption('s') then
+  begin
     FSilentMode:=True;
   end;
 
-  if HasOption('d') then begin
+  if HasOption('d') then
+  begin
     FDMIPath:=GetOptionValue('d');
 
     if not CheckDMIPath(GetCurrentDir() + '\' + FDMIPath) then begin
@@ -123,18 +148,10 @@ begin
   end
   else
   begin
+    writeln('-d is not optional parameter!');
     WriteHelp;
     Terminate(-1);
     Exit;
-  end;
-
-  if HasOption('b') then begin
-    FDBPath:=GetOptionValue('b');
-
-    if not CheckDBPath(GetCurrentDir() + '\' + FDBPath) then begin
-      Terminate(-1);
-      Exit;
-    end;
   end;
 
   try
@@ -175,10 +192,11 @@ end;
 
 procedure TMyApplication.WriteHelp;
 begin
-  writeln('Usage: ', ExeName, ' -h');
-  writeln('-h: Shows this help screen');
-  writeln('-d <path>: Dump file of DMI data');
+  writeln('Usage: ', ExeName, ' -h -d <path> -b <path> -s -i');
   writeln('-b <path>: Path to folder with .csv file');
+  writeln('-d <path>: Dump file of DMI data');
+  writeln('-h: Shows this help screen');
+  writeln('-i: Create clear well structured .csv file. Can be combined with -b');
   writeln('-s: Silent mode');
 end;
 
@@ -229,6 +247,11 @@ begin
   Result:=RunCommand(_mbRec.Updater, sParams, sOut);
   WriteLnS(sOut);
   WriteLnS('Flashing: ' + ifthen(Result, 'OK', 'ERROR'));
+end;
+
+procedure TMyApplication.initDB;
+begin
+  dwh.initDatabase;
 end;
 
 function TMyApplication.CheckUpdater(_updater: String): Boolean;
