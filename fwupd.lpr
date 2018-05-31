@@ -19,6 +19,7 @@ type
     FDMIPath: String;
     FDBPath: String;
     FSilentMode: Boolean;
+    FCurDir: String;
     function GetDMI: TDMIData;
     function GetDWH: TDataWarehouse;
   protected
@@ -53,21 +54,19 @@ begin
 end;
 
 function TMyApplication.Check(_mbRec: TDataMBRecord): Boolean;
-var
-  curdir: string;
 begin
-  curdir:=GetCurrentDir();
   WriteLnS('Checking parameters:');
 
-  Result:=CheckUpdater(curdir + '\' + _mbRec.Updater);
-  Result:=CheckFirmware(curdir + '\' + _mbRec.Firmware) and Result;
+  Result:=CheckUpdater(FCurDir + _mbRec.Updater);
+  Result:=CheckFirmware(FCurDir + _mbRec.Firmware) and Result;
 end;
 
 function TMyApplication.CheckDMIPath(_path: String): Boolean;
 begin
   Result:=FileExists(_path);
 
-  if not Result then begin
+  if not Result then
+  begin
     WriteLnS(Format('File %s not exists!', [_path]));
   end;
 end;
@@ -76,14 +75,16 @@ function TMyApplication.CheckDBPath(_path: String): Boolean;
 begin
   Result:=FileExists(_path);
 
-  if not Result then begin
+  if not Result then
+  begin
     WriteLnS(Format('File %s not exists!', [_path]));
   end;
 end;
 
 function TMyApplication.GetDMI: TDMIData;
 begin
-  if not Assigned(fdmi) then begin
+  if not Assigned(fdmi) then
+  begin
     fdmi:=TDMIData.Create(FDMIPath);
   end;
 
@@ -118,7 +119,7 @@ begin
     FDBPath:=GetOptionValue('b');
 
     if not HasOption('i')
-    and not CheckDBPath(GetCurrentDir() + '\' + FDBPath) then
+    and not CheckDBPath(FCurDir + FDBPath) then
     begin
       Terminate(-1);
       Exit;
@@ -141,7 +142,8 @@ begin
   begin
     FDMIPath:=GetOptionValue('d');
 
-    if not CheckDMIPath(GetCurrentDir() + '\' + FDMIPath) then begin
+    if not CheckDMIPath(FCurDir + FDMIPath) then
+    begin
       Terminate(-1);
       Exit;
     end;
@@ -183,6 +185,12 @@ constructor TMyApplication.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
   StopOnException:=True;
+  FCurDir:=GetCurrentDir;
+
+  if LeftStr(FCurDir, 1) <> '\' then
+  begin
+    FCurDir:=FCurDir + '\';
+  end;
 end;
 
 destructor TMyApplication.Destroy;
@@ -202,7 +210,8 @@ end;
 
 procedure TMyApplication.WriteLnS(_value: String);
 begin
-  if not FSilentMode then begin
+  if not FSilentMode then
+  begin
     writeln(_value);
   end;
 end;
