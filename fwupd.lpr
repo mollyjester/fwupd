@@ -20,6 +20,7 @@ type
     FDBPath: String;
     FSilentMode: Boolean;
     FCurDir: String;
+    FOutputCmdFile: String;
     function GetDMI: TDMIData;
     function GetDWH: TDataWarehouse;
   protected
@@ -33,7 +34,7 @@ type
     function CheckUpdater(_updater: String): Boolean;
     procedure DoRun; override;
     function FindMB: TDataMBRecord;
-    function FlashMB(_mbRec: TDataMBRecord): Boolean;
+    procedure outputCmd(_mbRec: TDataMBRecord);
     procedure initDB;
     procedure WriteHelp; virtual;
     procedure WriteLnS(_value: String);
@@ -97,7 +98,7 @@ var
   mbRec: TDataMBRecord;
 begin
   // quick check parameters
-  ErrorMsg:=CheckOptions('hd:b:si', '');
+  ErrorMsg:=CheckOptions('hd:b:sic:', '');
 
   if ErrorMsg<>'' then
   begin
@@ -151,7 +152,17 @@ begin
   else
   begin
     WriteLnS('ERROR: -d is not optional parameter!');
-    WriteHelp;
+    Terminate(-1);
+    Exit;
+  end;
+
+  if HasOption('c') then
+  begin
+    FOutputCmdFile:=GetOptionValue('c');
+  end
+  else
+  begin
+    WriteLnS('ERROR: -c is not optional parameter!');
     Terminate(-1);
     Exit;
   end;
@@ -160,9 +171,9 @@ begin
     mbRec:=FindMB();
 
     if (mbRec <> nil)
-    and Check(mbRec)
-    and FlashMB(mbRec) then
+    and Check(mbRec) then
     begin
+      outputCmd(mbRec);
       WriteLnS('Complete!');
     end
     else
@@ -248,7 +259,7 @@ begin
         end;
       end;
     until iPos = 0;
-    
+
     if Result <> nil then break;
   end;
 
@@ -262,21 +273,20 @@ begin
   end;
 end;
 
-function TMyApplication.FlashMB(_mbRec: TDataMBRecord): Boolean;
+procedure TMyApplication.outputCmd(_mbRec: TDataMBRecord);
 var
-  sOut: String;
   sParams: String;
   sUpdater: String;
 begin
   sUpdater:=FCurDir + _mbRec.Updater;
   sParams:=Format(_mbRec.ParamFmt, [FCurDir + _mbRec.Firmware]);
 
-  WriteLnS(Format('Start flashing: %s %s', [sUpdater, sParams]));
-
-  Result:=RunCommand(sUpdater, sParams, sOut);
-
-  WriteLnS(sOut);
-  WriteLnS('Flashing status: ' + ifthen(Result, 'OK', 'ERROR'));
+  with TStringList.Create do
+  begin
+    Append(Format('%s %s', [sUpdater, sParams]));
+    SaveToFile(FCurDir + FOutputCmdFile);
+    Free;
+  end;
 end;
 
 procedure TMyApplication.initDB;

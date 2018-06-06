@@ -192,7 +192,7 @@ begin
     FCSV.Clear;
     FCSV.LoadFromFile(FDBDir);
 
-    for i:=0 to FCSV.RowCount - 1 do
+    for i:=1 to FCSV.RowCount - 1 do
     begin
       FMBTable.Add(TDataMBRecord.Create(
           FCSV.Cells[0, i],

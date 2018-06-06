@@ -26,6 +26,8 @@ implementation
 
 function TDMIData.getDMIDump(): String;
 begin
+  Result:='';
+
   with TStringList.Create do
   begin
     LoadFromFile(FDMIPath);
