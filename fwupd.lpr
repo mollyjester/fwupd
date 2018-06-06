@@ -150,7 +150,7 @@ begin
   end
   else
   begin
-    writeln('-d is not optional parameter!');
+    WriteLnS('ERROR: -d is not optional parameter!');
     WriteHelp;
     Terminate(-1);
     Exit;
@@ -219,6 +219,9 @@ end;
 function TMyApplication.FindMB: TDataMBRecord;
 var
   i: Integer;
+  iPos: Integer;
+  iLen: Integer;
+  sDump: String;
   mbRec: TDataMBRecord;
 begin
   Result:=nil;
@@ -226,11 +229,27 @@ begin
   for i:=0 to dwh.mbTable.Count - 1 do
   begin
     mbRec:=dwh.mbTable.recordsIdx[i];
+    sDump:=dmi.dmiDump;
+    iLen:=Length(mbRec.MBVersion);
 
-    if Pos(mbRec.MBVersion, dmi.dmiDump) <> 0 then begin
-      Result:=mbRec;
-      break;
-    end;
+    repeat
+      iPos:=Pos(mbRec.MBVersion, sDump);
+
+      if iPos <> 0 then
+      begin
+        if sDump[iPos + iLen] = #13 then
+        begin
+          Result:=mbRec;
+          break;
+        end
+        else
+        begin
+          sDump:=Copy(sDump, iPos + iLen, Length(sDump));
+        end;
+      end;
+    until iPos = 0;
+    
+    if Result <> nil then break;
   end;
 
   if Assigned(Result) then
@@ -247,15 +266,17 @@ function TMyApplication.FlashMB(_mbRec: TDataMBRecord): Boolean;
 var
   sOut: String;
   sParams: String;
+  sUpdater: String;
 begin
-  sParams:=Format(_mbRec.ParamFmt, [_mbRec.Firmware]);
-  WriteLnS(Format('Start flashing: %s%s %s',
-     [GetCurrentDir(),
-      _mbRec.Updater,
-      sParams]));
-  Result:=RunCommand(_mbRec.Updater, sParams, sOut);
+  sUpdater:=FCurDir + _mbRec.Updater;
+  sParams:=Format(_mbRec.ParamFmt, [FCurDir + _mbRec.Firmware]);
+
+  WriteLnS(Format('Start flashing: %s %s', [sUpdater, sParams]));
+
+  Result:=RunCommand(sUpdater, sParams, sOut);
+
   WriteLnS(sOut);
-  WriteLnS('Flashing: ' + ifthen(Result, 'OK', 'ERROR'));
+  WriteLnS('Flashing status: ' + ifthen(Result, 'OK', 'ERROR'));
 end;
 
 procedure TMyApplication.initDB;
