@@ -213,6 +213,7 @@ procedure TMyApplication.WriteHelp;
 begin
   writeln('Usage: ', ExeName, ' -h -d <path> -b <path> -s -i');
   writeln('-b <path>: Path to folder with .csv file');
+  writeln('-c <file>: An output .bat file containing FW update script');
   writeln('-d <path>: Dump file of DMI data');
   writeln('-h: Shows this help screen');
   writeln('-i: Create clear well structured .csv file. Can be combined with -b');
